@@ -5,18 +5,20 @@ import json
 import socket
 import minimax
 
-def get_move(maxTurnTime, player, board):
-  print("making choice")
+
+def get_move(player, board, turn):
+  print("\nMaking choice")
+  print ('Turn:', turn)
   choice = minimax.makeChoice(player, board)
-  print(choice)
   return choice
 
 def prepare_response(move):
   response = '{}\n'.format(move).encode()
-  print('sending {!r}'.format(response))
+  print('sending {!r}\n'.format(response))
   return response
 
 if __name__ == "__main__":
+  turn = 0
   port = int(sys.argv[1]) if (len(sys.argv) > 1 and sys.argv[1]) else 1337
   host = sys.argv[2] if (len(sys.argv) > 2 and sys.argv[2]) else socket.gethostname()
   print ('Client running on port:', port)
@@ -34,7 +36,8 @@ if __name__ == "__main__":
       maxTurnTime = json_data['maxTurnTime']
       player = json_data['player']
       print (player, maxTurnTime, board)
-      move = get_move(float(maxTurnTime), int(player), board)
+      move = get_move(int(player), board, turn)
+      turn += 1
       response = prepare_response(list(move))
       sock.sendall(response)
   finally:

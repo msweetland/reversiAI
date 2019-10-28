@@ -3,34 +3,52 @@ import copy
 import utilities
 import heuristics
 
-def minimax(board, originalPlayer: int, currentplayer: int, depth: int,) -> float:
+
+def minimax(board, originalPlayer, currentplayer, depth, alpha=-math.inf, beta=math.inf) -> float:
   """Minimax algorithm"""
   if depth == 0:
-    return heuristics.scoreDiff(board, currentplayer)
+    return heuristics.mixed(board, currentplayer)
 
   possibleMoves = utilities.getValidMoves(currentplayer, board)
-  scores = []
-  for move in possibleMoves:
-    coord, validMoves = move
-    tempBoard = copy.deepcopy(board)
-    opponent = utilities.getOpponent(currentplayer)
-    heuristic = minimax(tempBoard, originalPlayer, opponent, depth - 1)
-    scores.append(heuristic)
-
   isMaximizing = originalPlayer == currentplayer
+  opponent = utilities.getOpponent(currentplayer)
 
   if isMaximizing:
-    if len(scores) == 0:
-      return -math.inf
-    return max(scores)
+    bestValue = -math.inf
+    for move in possibleMoves:
+      coord, tiles = move
+      tempBoard = copy.deepcopy(board)
+      for m in tiles:
+        utilities.setTile(m, currentplayer,  tempBoard)
+
+      heuristic = minimax(tempBoard, originalPlayer,
+                          opponent, depth - 1, bestValue, beta)
+      if heuristic > bestValue:
+        bestValue = heuristic
+      if bestValue > beta:
+        return beta
+    return bestValue
   else:
-    if len(scores) == 0:
-      return math.inf
-    return min(scores)
+    bestValue = math.inf
+    for move in possibleMoves:
+      coord, tiles = move
+      tempBoard = copy.deepcopy(board)
+      for m in tiles:
+        utilities.setTile(m, currentplayer,  tempBoard)
+
+      heuristic = minimax(tempBoard, originalPlayer,
+                          opponent, depth - 1, alpha, bestValue)
+      if heuristic < bestValue:
+        bestValue = heuristic
+      if bestValue < alpha:
+        return alpha
+    return bestValue
 
 
 def makeChoice(player, board):
+  """minimax setup"""
   possibleMoves = utilities.getValidMoves(player, board)
+  print (len(possibleMoves))
   ranked = []
   for move in possibleMoves:
     coord, tiles = move
